@@ -11,7 +11,7 @@ private enum DivisionError: Error {
     case leftEmptyError
     case rightEmptyError
     case rightZeroError
-    var divisionErrorType: String {
+    var message: String {
         switch self {
         case .leftEmptyError: return "割られる数を入力してください"
         case .rightEmptyError: return "割る数を入力してください"
@@ -23,13 +23,12 @@ private enum DivisionError: Error {
 struct ContentView: View {
     
     @State private var showingAlert = false
+    @State private var alertMessage = ""
+
     @State private var numText1 = ""
     @State private var numText2 = ""
     @State private var total:Double = 0
-    @State private var showingLeftEmptyAlert = false
-    @State private var showingRightEmptyAlert = false
-    @State private var showingRightZeroAlert = false
-    
+
     var body: some View {
         
         VStack {
@@ -48,40 +47,23 @@ struct ContentView: View {
                 do {
                     try total = calc()
                 } catch let error as DivisionError {
+                    alertMessage = error.message
                     showingAlert = true
-                    switch error {
-                    case .leftEmptyError:
-                        showingLeftEmptyAlert = true
-                    case .rightEmptyError:
-                        showingRightEmptyAlert = true
-                    case .rightZeroError:
-                        showingRightZeroAlert = true
-                    }
                 } catch {
                     print("不明なエラー: \(error)")
-                }
-            }
-            .alert("課題５", isPresented: $showingAlert) {
-            } message: {
-                let divisionErrorLeft = DivisionError.leftEmptyError
-                let alertLeftEmpty = divisionErrorLeft.divisionErrorType
-                let divisionErrorRightEmpty = DivisionError.rightEmptyError
-                let alertRightEmpty = divisionErrorRightEmpty.divisionErrorType
-                let divisionErrorRightZero = DivisionError.rightZeroError
-                let alertRightZero = divisionErrorRightZero.divisionErrorType
-                if showingLeftEmptyAlert {
-                    Text(alertLeftEmpty)
-                }
-                if showingRightEmptyAlert {
-                    Text(alertRightEmpty)
-                }
-                if showingRightZeroAlert {
-                    Text(alertRightZero)
                 }
             }
             Text(String(format: "%.2f", total))
                 .padding()
         }
+        // https://developer.apple.com/documentation/swiftui/hstack/alert(_:ispresented:presenting:actions:message:)-agi7
+        .alert(
+            "課題５",
+            isPresented: $showingAlert,
+            presenting: alertMessage,
+            actions: { _ in },
+            message: { message in Text(message) }
+        )
     }
     
     func calc () throws -> Double {
